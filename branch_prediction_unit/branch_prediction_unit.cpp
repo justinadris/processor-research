@@ -1,34 +1,43 @@
-#include <algorithm>
-#include <ctime>
-#include <iostream>
-#include <vector>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
-int main() 
+#define SIZE 32768
+#define ITERATIONS 10000
+
+int main(void)
 {
-    const int SIZE = 32'768;
-    std::vector<int> data(SIZE);
-    
-    for (int i = 0; i < SIZE; ++i) 
-        data[i] = std::rand() % 1024;
-    
-    
-    // std::sort(data.begin(), data.end()); 
-    // If data is sorted, the BPU predicts perfectly
+    int data[SIZE];
+
+    // Populate array with random values
+    for (int i = 0; i < SIZE; ++i)
+        data[i] = rand() % 1024;
+
+    // Uncomment to sort the array
+    // qsort(data, SIZE, sizeof(int), compare);
 
     long long sum = 0;
+
     clock_t start = clock();
 
-    // loops 327'680'000
-    for (int i = 0; i < 10'000; ++i) 
+    // 327,680,000 total iterations
+    for (int i = 0; i < ITERATIONS; ++i)
     {
-        for (int j = 0; j < SIZE; ++j) 
+        for (int j = 0; j < SIZE; ++j)
         {
-            // This is the branch the BPU must predict
-            if (data[j] >= 512) 
+            // Branch being evaluated by the CPU's BPU
+            if (data[j] >= 512)
                 sum += data[j];
         }
     }
 
-    double duration = static_cast<double>(clock() - start) / CLOCKS_PER_SEC;
-    std::cout << "Time: " << duration << "s\n";
+    clock_t end = clock();
+
+    double duration =
+        (double)(end - start) / CLOCKS_PER_SEC;
+
+    printf("Time: %.6f seconds\n", duration);
+    printf("Checksum: %lld\n", sum);
+
+    return 0;
 }
